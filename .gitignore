@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+backend/bin/
+backend/obj/
+frontend/dist/
+*.dll
+*.pdb
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Test results
+test-results/
+playwright-report/
+playwright-test-results/
+frontend/vitest.config.ts.timestamp-*
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.vite/
+frontend/.vite/
+*.tsbuildinfo
+
+# Kilo CLI
+.kilo/
+
+# NuGet
+*.nupkg

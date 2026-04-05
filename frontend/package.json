@@ -1,0 +1,29 @@
+{
+  "name": "chesster-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.7",
+    "chess.js": "^1.0.0-beta.8",
+    "axios": "^1.6.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/test-utils": "^2.4.5",
+    "jsdom": "^24.0.0",
+    "typescript": "^5.4.3",
+    "vite": "^5.2.8",
+    "vitest": "^1.4.0",
+    "vue-tsc": "^2.0.7"
+  }
+}
