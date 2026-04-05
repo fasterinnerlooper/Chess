@@ -1,0 +1,88 @@
+name: Azure CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run frontend unit tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Restore backend dependencies
+        run: dotnet restore backend/Chesster.Api/Chesster.Api.csproj
+
+      - name: Build backend
+        run: dotnet build backend/Chesster.Api/Chesster.Api.csproj --configuration Release --no-restore
+
+      - name: Run backend tests
+        run: dotnet test backend/Chesster.Api.Tests/Chesster.Api.Tests.csproj --configuration Release --no-restore --verbosity normal
+
+  deploy:
+    name: Deploy to Azure
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy using repo script
+        run: |
+          chmod +x ./deploy-azure.sh
+          ./deploy-azure.sh
+        env:
+          RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+          CONTAINERAPPS_ENV: ${{ secrets.AZURE_CONTAINERAPPS_ENV }}
+          FRONTEND_APP: ${{ secrets.AZURE_FRONTEND_APP }}
+          BACKEND_APP: ${{ secrets.AZURE_BACKEND_APP }}
+          LOCATION: ${{ secrets.AZURE_LOCATION }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          JWT_KEY: ${{ secrets.JWT_KEY }}
