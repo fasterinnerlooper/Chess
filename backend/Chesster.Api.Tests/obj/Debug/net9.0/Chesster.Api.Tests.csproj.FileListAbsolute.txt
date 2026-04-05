@@ -1,8 +1,0 @@
-D:\repos\Chess\backend\Chesster.Api.Tests\bin\Debug\net9.0\.msCoverageSourceRootsMapping_Chesster.Api.Tests
-D:\repos\Chess\backend\Chesster.Api.Tests\bin\Debug\net9.0\CoverletSourceRootsMapping_Chesster.Api.Tests
-D:\repos\Chess\backend\Chesster.Api.Tests\obj\Debug\net9.0\Chesster.Api.Tests.csproj.AssemblyReference.cache
-D:\repos\Chess\backend\Chesster.Api.Tests\obj\Debug\net9.0\MvcTestingAppManifest.json
-D:\repos\Chess\backend\Chesster.Api.Tests\obj\Debug\net9.0\Chesster.Api.Tests.GeneratedMSBuildEditorConfig.editorconfig
-D:\repos\Chess\backend\Chesster.Api.Tests\obj\Debug\net9.0\Chesster.Api.Tests.AssemblyInfoInputs.cache
-D:\repos\Chess\backend\Chesster.Api.Tests\obj\Debug\net9.0\Chesster.Api.Tests.AssemblyInfo.cs
-D:\repos\Chess\backend\Chesster.Api.Tests\obj\Debug\net9.0\Chesster.Api.Tests.csproj.CoreCompileInputs.cache
