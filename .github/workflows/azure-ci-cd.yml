@@ -48,7 +48,7 @@ jobs:
         run: npm run build
 
       - name: Restore backend dependencies
-        run: dotnet restore backend/Chesster.Api/Chesster.Api.csproj
+        run: dotnet restore backend/Chesster.sln
 
       - name: Build backend
         run: dotnet build backend/Chesster.Api/Chesster.Api.csproj --configuration Release --no-restore

@@ -95,7 +95,8 @@ public class AnalysisController : ControllerBase
             if (game == null)
                 return NotFound(new { message = "Game not found" });
 
-            await _context.GameAnalyses.Where(a => a.GameId == gameId).ExecuteDeleteAsync();
+            _context.GameAnalyses.RemoveRange(_context.GameAnalyses.Where(a => a.GameId == gameId));
+            await _context.SaveChangesAsync();
 
             var parsed = _pgnParser.Parse(game.Pgn);
             if (parsed.Moves.Count == 0)

@@ -147,9 +147,9 @@ public class AuthControllerTests : TestBase
         var result = await _controller.Login(request);
 
         // Assert
-        result.Should().BeOfType<UnauthorizedObjectResult>();
-        result.Should().BeAssignableTo<UnauthorizedObjectResult>();
-        var unauthorizedResult = result as UnauthorizedObjectResult;
+        result.Result.Should().BeOfType<UnauthorizedObjectResult>();
+        result.Result.Should().BeAssignableTo<UnauthorizedObjectResult>();
+        var unauthorizedResult = result.Result as UnauthorizedObjectResult;
         unauthorizedResult.Should().NotBeNull();
         unauthorizedResult!.Value.Should().BeEquivalentTo(new { message = "Invalid email or password" });
     }
@@ -181,9 +181,9 @@ public class AuthControllerTests : TestBase
         var result = await _controller.GetCurrentUser();
 
         // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        result.Should().BeAssignableTo<OkObjectResult>();
-        var okResult = result as OkObjectResult;
+        result.Result.Should().BeOfType<OkObjectResult>();
+        result.Result.Should().BeAssignableTo<OkObjectResult>();
+        var okResult = result.Result as OkObjectResult;
         okResult.Should().NotBeNull();
         var userDto = okResult!.Value as UserDto;
         userDto.Should().NotBeNull();
@@ -201,7 +201,7 @@ public class AuthControllerTests : TestBase
         var result = await _controller.GetCurrentUser();
 
         // Assert
-        result.Should().BeOfType<UnauthorizedResult>();
+        result.Result.Should().BeOfType<UnauthorizedResult>();
     }
 
     [Fact]
@@ -221,6 +221,6 @@ public class AuthControllerTests : TestBase
         var result = await _controller.GetCurrentUser();
 
         // Assert
-        result.Should().BeOfType<NotFoundResult>();
+        result.Result.Should().BeOfType<NotFoundResult>();
     }
 }

@@ -5,6 +5,8 @@ using Chesster.Api.Controllers;
 using FluentAssertions;
 using Xunit;
 using Chesster.Api.Models.DTOs;
+using Moq;
+using System;
 
 namespace Chesster.Api.Tests;
 
@@ -70,9 +72,9 @@ public class AnalysisControllerTests : TestBase
         var result = await _controller.GetGameAnalysis(gameId);
 
         // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        var okResult = (OkObjectResult)result;
-        var analyses = okResult.Value as List<AnalysisDto>;
+        result.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = result.Result as OkObjectResult;
+        var analyses = okResult!.Value as List<AnalysisDto>;
         analyses.Should().NotBeNull();
         analyses!.Should().HaveCount(1);
         analyses[0].Move.Should().Be("e4");
@@ -95,9 +97,9 @@ public class AnalysisControllerTests : TestBase
         var result = await _controller.GetGameAnalysis(gameId);
 
         // Assert
-        result.Should().BeOfType<NotFoundObjectResult>();
-        var notFoundResult = (NotFoundObjectResult)result;
-        notFoundResult.Value.Should().BeEquivalentTo(new { message = "Game not found" });
+        result.Result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = result.Result as NotFoundObjectResult;
+        notFoundResult!.Value.Should().BeEquivalentTo(new { message = "Game not found" });
     }
 
     [Fact]
@@ -148,6 +150,11 @@ public class AnalysisControllerTests : TestBase
             .Setup(x => x.Parse(game.Pgn))
             .Returns(new Chesster.Api.Services.ParsedGame { Moves = parsedMoves });
 
+        // Mock analysis engine
+        _mockAnalysisEngine
+            .Setup(x => x.AnalyzePositionAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ChernevExplanation("Good", "Test reason", new List<CandidateMove>(), new List<string> { "Test idea" }, "Test consider", 50, 100));
+
         // Setup HttpContext with claims
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
         var identity = new ClaimsIdentity(claims, "TestAuth");
@@ -158,9 +165,9 @@ public class AnalysisControllerTests : TestBase
         var result = await _controller.AnalyzeGame(gameId);
 
         // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        var okResult = (OkObjectResult)result;
-        var analyses = okResult.Value as List<AnalysisDto>;
+        result.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = result.Result as OkObjectResult;
+        var analyses = okResult!.Value as List<AnalysisDto>;
         analyses.Should().NotBeNull();
         analyses!.Should().HaveCount(2);
     }
@@ -182,8 +189,8 @@ public class AnalysisControllerTests : TestBase
         var result = await _controller.AnalyzeGame(gameId);
 
         // Assert
-        result.Should().BeOfType<NotFoundObjectResult>();
-        var notFoundResult = (NotFoundObjectResult)result;
-        notFoundResult.Value.Should().BeEquivalentTo(new { message = "Game not found" });
+        result.Result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = result.Result as NotFoundObjectResult;
+        notFoundResult!.Value.Should().BeEquivalentTo(new { message = "Game not found" });
     }
 }

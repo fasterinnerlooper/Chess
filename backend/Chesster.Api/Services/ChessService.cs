@@ -279,6 +279,14 @@ public class ChessService : IChessService
             }
         }
 
+        // Handle en passant
+        position.EnPassantSquare = null;
+        if (piece.ToLower()[0] == 'p' && Math.Abs(toPos.row - fromPos.row) == 2)
+        {
+            var epRow = (fromPos.row + toPos.row) / 2;
+            position.EnPassantSquare = ((char)('a' + toPos.col)).ToString() + (8 - epRow);
+        }
+
         if (piece.ToLower()[0] == 'p' && Math.Abs(toPos.col - fromPos.col) > 0 && 
             position.Board[toPos.row][toPos.col] == null)
         {
@@ -286,8 +294,14 @@ public class ChessService : IChessService
             position.Board[captureRow][toPos.col] = null;
         }
 
+        // Update half move clock
+        if (piece.ToLower()[0] == 'p' || position.Board[toPos.row][toPos.col] != null)
+            position.HalfMoveClock = 0;
+        else
+            position.HalfMoveClock++;
+
         position.WhiteToMove = !position.WhiteToMove;
-        if (!position.WhiteToMove)
+        if (position.WhiteToMove)
             position.FullMoveNumber++;
 
         return position.ToFen();

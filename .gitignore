@@ -1,14 +1,30 @@
 # Dependencies
 node_modules/
-frontend/node_modules/
 
 # Build outputs
-dist/
-backend/bin/
-backend/obj/
-frontend/dist/
+**/dist/
+**/bin/
+**/obj/
+**/dist/
 *.dll
 *.pdb
+*.exe
+*.dll.config
+*.exe.config
+
+# .NET specific
+packages/
+**/packages/
+*.csproj.user
+*.suo
+*.vspscc
+*.vssscc
+*.vsix
+*.vsixmanifest
+*.vsixcontent
+*.vsixdeployment
+build_log.txt
+*.cache
 
 # Environment files
 .env
@@ -20,6 +36,16 @@ test-results/
 playwright-report/
 playwright-test-results/
 frontend/vitest.config.ts.timestamp-*
+**/TestResults/
+*.trx
+*.testresult
+
+# Coverage reports
+coverage/
+lcov-report/
+lcov.info
+*.lcov
+coverage-report/
 
 # IDE
 .vs/

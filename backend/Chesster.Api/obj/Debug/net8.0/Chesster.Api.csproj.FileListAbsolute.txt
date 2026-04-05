@@ -49,3 +49,4 @@ D:\repos\Chess\backend\Chesster.Api\obj\Debug\net8.0\refint\Chesster.Api.dll
 D:\repos\Chess\backend\Chesster.Api\obj\Debug\net8.0\Chesster.Api.pdb
 D:\repos\Chess\backend\Chesster.Api\obj\Debug\net8.0\Chesster.Api.genruntimeconfig.cache
 D:\repos\Chess\backend\Chesster.Api\obj\Debug\net8.0\ref\Chesster.Api.dll
+D:\repos\Chess\backend\Chesster.Api\obj\Debug\net8.0\Chesster.Api.sourcelink.json

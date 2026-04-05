@@ -52,9 +52,9 @@ public class GamesControllerTests : TestBase
         var result = await _controller.GetGames();
 
         // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        result.Should().BeAssignableTo<OkObjectResult>();
-        var okResult = result as OkObjectResult;
+        result.Result.Should().BeOfType<OkObjectResult>();
+        result.Result.Should().BeAssignableTo<OkObjectResult>();
+        var okResult = result.Result as OkObjectResult;
         okResult.Should().NotBeNull();
         var returnedGames = okResult!.Value as List<GameDto>;
         returnedGames.Should().NotBeNull();
@@ -85,9 +85,9 @@ public class GamesControllerTests : TestBase
         var result = await _controller.GetGame(gameId);
 
         // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        var okResult = (OkObjectResult)result;
-        var returnedGame = okResult.Value as GameDto;
+        result.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = result.Result as OkObjectResult;
+        var returnedGame = okResult!.Value as GameDto;
         returnedGame.Should().NotBeNull();
         returnedGame!.Id.Should().Be(gameId);
         returnedGame.White.Should().Be("White");
@@ -115,9 +115,9 @@ public class GamesControllerTests : TestBase
         var result = await _controller.GetGame(gameId);
 
         // Assert
-        result.Should().BeOfType<NotFoundObjectResult>();
-        var notFoundResult = (NotFoundObjectResult)result;
-        notFoundResult.Value.Should().BeEquivalentTo(new { message = "Game not found" });
+        result.Result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = result.Result as NotFoundObjectResult;
+        notFoundResult!.Value.Should().BeEquivalentTo(new { message = "Game not found" });
     }
 
     [Fact]
@@ -162,8 +162,8 @@ public class GamesControllerTests : TestBase
         var result = await _controller.CreateGame(request);
 
         // Assert
-        result.Should().BeOfType<CreatedAtActionResult>();
-        var createdResult = result as CreatedAtActionResult;
+        result.Result.Should().BeOfType<CreatedAtActionResult>();
+        var createdResult = result.Result as CreatedAtActionResult;
         createdResult!.ActionName.Should().Be(nameof(GamesController.GetGame));
         createdResult.RouteValues!["id"].Should().Be(createdGame.Id);
         var returnedGame = createdResult.Value as GameDto;
@@ -215,9 +215,9 @@ public class GamesControllerTests : TestBase
         var result = await _controller.UpdateGame(gameId, updateRequest);
 
         // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        var okResult = (OkObjectResult)result;
-        var returnedGame = okResult.Value as GameDto;
+        result.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = result.Result as OkObjectResult;
+        var returnedGame = okResult!.Value as GameDto;
         returnedGame.Should().NotBeNull();
         returnedGame!.White.Should().Be("Updated White");
         returnedGame.Black.Should().Be("Updated Black");
@@ -246,9 +246,9 @@ public class GamesControllerTests : TestBase
         var result = await _controller.UpdateGame(gameId, updateRequest);
 
         // Assert
-        result.Should().BeOfType<NotFoundObjectResult>();
-        var notFoundResult = (NotFoundObjectResult)result;
-        notFoundResult.Value.Should().BeEquivalentTo(new { message = "Game not found" });
+        result.Result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = result.Result as NotFoundObjectResult;
+        notFoundResult!.Value.Should().BeEquivalentTo(new { message = "Game not found" });
     }
 
     [Fact]
@@ -336,9 +336,9 @@ public class GamesControllerTests : TestBase
         var result = await _controller.ImportPgn(request);
 
         // Assert
-        result.Should().BeOfType<CreatedAtActionResult>();
-        var createdResult = (CreatedAtActionResult)result;
-        createdResult.ActionName.Should().Be(nameof(GamesController.GetGame));
+        result.Result.Should().BeOfType<CreatedAtActionResult>();
+        var createdResult = result.Result as CreatedAtActionResult;
+        createdResult!.ActionName.Should().Be(nameof(GamesController.GetGame));
         var returnedGame = createdResult.Value as GameDto;
         returnedGame.Should().NotBeNull();
         returnedGame!.White.Should().Be("White");

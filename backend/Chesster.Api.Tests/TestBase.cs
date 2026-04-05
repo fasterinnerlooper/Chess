@@ -61,6 +61,10 @@ public class TestBase
 
         _serviceProvider = services.BuildServiceProvider();
         _dbContext = _serviceProvider.GetRequiredService<ChessterDbContext>();
+
+        // Ensure clean database for each test
+        _dbContext.Database.EnsureDeleted();
+        _dbContext.Database.EnsureCreated();
     }
 
     protected Guid CreateTestUser(string username = "testuser", string email = "test@example.com")
