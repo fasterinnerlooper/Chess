@@ -30,7 +30,20 @@ COPY --from=builder /app/publish .
 
 EXPOSE 8080
 
-ENV ASPNETCORE_ENVIRONMENT=Development \
+ENV ASPNETCORE_ENVIRONMENT=Production \
     ASPNETCORE_URLS=http://+:8080
 
 ENTRYPOINT ["dotnet", "Chesster.Api.dll"]
+
+# Development stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
+WORKDIR /src
+
+COPY --from=builder /app/publish .
+
+EXPOSE 8080
+
+ENV ASPNETCORE_ENVIRONMENT=Development \
+    ASPNETCORE_URLS=http://+:8080
+
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--project", "Chesster.Api.dll"]

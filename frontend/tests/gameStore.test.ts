@@ -27,6 +27,7 @@ vi.mock('chess.js', () => {
 
 vi.mock('../src/services/api', () => ({
   gamesApi: {
+    getAll: vi.fn(),
     getById: vi.fn(),
   },
   analysisApi: {
@@ -271,5 +272,194 @@ describe('useGameStore', () => {
     expect(store.analyzing).toBe(false);
     expect(store.error).toBe('Analysis service unavailable');
     expect(store.analyses).toEqual([]);
+  });
+
+  it('should fetch games successfully', async () => {
+    const { gamesApi } = await import('../src/services/api');
+    
+    const mockGames = [
+      { id: '1', pgn: '1. e4', white: 'White', black: 'Black', result: '1-0' },
+      { id: '2', pgn: '1. d4', white: 'Player1', black: 'Player2', result: '0-1' }
+    ];
+    vi.mocked(gamesApi.getAll).mockResolvedValue({ data: mockGames } as any);
+
+    const store = useGameStore();
+    await store.fetchGames();
+
+    expect(store.games).toEqual(mockGames);
+    expect(store.loading).toBe(false);
+    expect(store.error).toBeNull();
+  });
+
+  it('should handle fetch games error', async () => {
+    const { gamesApi } = await import('../src/services/api');
+    
+    const errorResponse = { response: { data: { message: 'Failed to load games' } } };
+    vi.mocked(gamesApi.getAll).mockRejectedValue(errorResponse);
+
+    const store = useGameStore();
+    await store.fetchGames();
+
+    expect(store.games).toEqual([]);
+    expect(store.loading).toBe(false);
+    expect(store.error).toBe('Failed to load games');
+  });
+
+  it('should fetch game by id', async () => {
+    const { gamesApi } = await import('../src/services/api');
+    const { Chess } = await import('chess.js');
+    const mockChessInstance = Chess.mock.results[0]?.value || Chess();
+    
+    mockChessInstance.loadPgn.mockImplementation(() => true);
+    mockChessInstance.history.mockReturnValue([
+      { san: 'e4', from: 'e2', to: 'e4', promotion: undefined }
+    ]);
+    mockChessInstance.reset.mockImplementation(() => true);
+    mockChessInstance.fen.mockReturnValue(STARTING_FEN);
+
+    const mockGame = { 
+      id: 'game-1', 
+      pgn: TEST_PGN, 
+      white: 'White', 
+      black: 'Black', 
+      result: '1-0',
+      analyses: []
+    };
+    vi.mocked(gamesApi.getById).mockResolvedValue({ data: mockGame } as any);
+
+    const store = useGameStore();
+    await store.fetchGame('game-1');
+
+    expect(store.currentGame).toEqual(mockGame);
+    expect(store.loading).toBe(false);
+    expect(store.error).toBeNull();
+  });
+
+  it('should load existing analyses when fetching game', async () => {
+    const { gamesApi } = await import('../src/services/api');
+    const { Chess } = await import('chess.js');
+    const mockChessInstance = Chess.mock.results[0]?.value || Chess();
+    
+    mockChessInstance.loadPgn.mockImplementation(() => true);
+    mockChessInstance.history.mockReturnValue([]);
+    mockChessInstance.reset.mockImplementation(() => true);
+    mockChessInstance.fen.mockReturnValue(STARTING_FEN);
+
+    const mockAnalyses = [
+      { id: 'a1', moveNumber: 1, side: 'w', fen: 'fen1', move: 'e4', explanation: { moveQuality: 'Good', whyItWasPlayed: 'Test', alternatives: [], strategicIdeas: [], whatToConsider: 'Test', evaluation: 0.5 } }
+    ];
+    const mockGame = { 
+      id: 'game-1', 
+      pgn: TEST_PGN, 
+      white: 'White', 
+      black: 'Black', 
+      result: '1-0',
+      analyses: mockAnalyses
+    };
+    vi.mocked(gamesApi.getById).mockResolvedValue({ data: mockGame } as any);
+
+    const store = useGameStore();
+    await store.fetchGame('game-1');
+
+    expect(store.analyses).toEqual(mockAnalyses);
+  });
+
+  it('should navigate to next move', async () => {
+    const store = useGameStore();
+    
+    store.gameHistory = [
+      { san: 'e4', uci: 'e2e4', fen: 'test1', moveNumber: 1, side: 'w' },
+      { san: 'e5', uci: 'e7e5', fen: 'test2', moveNumber: 1, side: 'b' },
+    ];
+    
+    store.goToMove(0);
+    store.nextMove();
+    
+    expect(store.currentMoveIndex).toBe(1);
+  });
+
+  it('should navigate to previous move', async () => {
+    const store = useGameStore();
+    
+    store.gameHistory = [
+      { san: 'e4', uci: 'e2e4', fen: 'test1', moveNumber: 1, side: 'w' },
+      { san: 'e5', uci: 'e7e5', fen: 'test2', moveNumber: 1, side: 'b' },
+    ];
+    
+    store.goToMove(1);
+    store.previousMove();
+    
+    expect(store.currentMoveIndex).toBe(0);
+  });
+
+  it('should navigate to end', async () => {
+    const store = useGameStore();
+    
+    store.gameHistory = [
+      { san: 'e4', uci: 'e2e4', fen: 'test1', moveNumber: 1, side: 'w' },
+      { san: 'e5', uci: 'e7e5', fen: 'test2', moveNumber: 1, side: 'b' },
+    ];
+    
+    store.goToEnd();
+    
+    expect(store.currentMoveIndex).toBe(1);
+  });
+
+  it('should clear current game', async () => {
+    const store = useGameStore();
+    
+    store.currentGame = { id: '1', pgn: 'test', white: 'White', black: 'Black', result: '1-0' };
+    store.currentPosition = 'r1bqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1';
+    store.currentMoveIndex = 5;
+    store.gameHistory = [{ san: 'e4', uci: 'e2e4', fen: 'test', moveNumber: 1, side: 'w' }];
+    store.analyses = [{ id: 'a1', moveNumber: 1, side: 'w', fen: 'fen', move: 'e4', explanation: { moveQuality: 'Good', whyItWasPlayed: 'Test', alternatives: [], strategicIdeas: [], whatToConsider: 'Test', evaluation: 0.5 } }];
+
+    store.clearCurrentGame();
+
+    expect(store.currentGame).toBeNull();
+    expect(store.currentPosition).toBe(STARTING_FEN);
+    expect(store.currentMoveIndex).toBe(-1);
+    expect(store.gameHistory).toEqual([]);
+    expect(store.analyses).toEqual([]);
+  });
+
+  it('should handle fetch game error', async () => {
+    const { gamesApi } = await import('../src/services/api');
+    
+    const errorResponse = { response: { data: { message: 'Game not found' } } };
+    vi.mocked(gamesApi.getById).mockRejectedValue(errorResponse);
+
+    const store = useGameStore();
+    await store.fetchGame('invalid-id');
+
+    expect(store.loading).toBe(false);
+    expect(store.error).toBe('Game not found');
+  });
+
+  it('should return early from analyzeGame when no current game', async () => {
+    const { analysisApi } = await import('../src/services/api');
+    vi.mocked(analysisApi.analyzeGame).mockClear();
+    
+    const store = useGameStore();
+    store.currentGame = null;
+    
+    await store.analyzeGame();
+
+    expect(vi.mocked(analysisApi.analyzeGame)).not.toHaveBeenCalled();
+    expect(store.analyzing).toBe(false);
+  });
+
+  it('should bound goToMove to valid range', () => {
+    const store = useGameStore();
+    
+    store.gameHistory = [
+      { san: 'e4', uci: 'e2e4', fen: 'test1', moveNumber: 1, side: 'w' },
+    ];
+    
+    store.goToMove(-5);
+    expect(store.currentMoveIndex).toBe(-1);
+    
+    store.goToMove(100);
+    expect(store.currentMoveIndex).toBe(0);
   });
 });

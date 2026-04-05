@@ -75,7 +75,6 @@ export const useGameStore = defineStore('game', () => {
 
   function generateMoveHistory() {
     gameHistory.value = [];
-    chess.reset();
     const history = chess.history({ verbose: true });
     let moveNumber = 1;
     let side: 'w' | 'b' = 'w';

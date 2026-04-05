@@ -1,0 +1,17 @@
+services:
+  chesster-frontend:
+    build:
+      target: development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://chesster-api:8080
+
+  chesster-api:
+    build:
+      target: development
+    volumes:
+      - ./backend/Chesster.Api:/src
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
