@@ -1194,25 +1194,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\shafi\\.nuget\\packages\\": {}
+    "/root/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\repos\\Chess\\backend\\Chesster.Api\\Chesster.Api.csproj",
+      "projectUniqueName": "/src/Chesster.Api/Chesster.Api.csproj",
       "projectName": "Chesster.Api",
-      "projectPath": "D:\\repos\\Chess\\backend\\Chesster.Api\\Chesster.Api.csproj",
-      "packagesPath": "C:\\Users\\shafi\\.nuget\\packages\\",
-      "outputPath": "D:\\repos\\Chess\\backend\\Chesster.Api\\obj\\",
+      "projectPath": "/src/Chesster.Api/Chesster.Api.csproj",
+      "packagesPath": "/root/.nuget/packages/",
+      "outputPath": "/src/Chesster.Api/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\shafi\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/root/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1230,8 +1229,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.300"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -1273,20 +1271,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[8.0.25, 8.0.25]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[8.0.25, 8.0.25]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[8.0.25, 8.0.25]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -1295,7 +1279,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.312/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.419/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

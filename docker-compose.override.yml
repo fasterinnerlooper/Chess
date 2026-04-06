@@ -12,6 +12,6 @@ services:
     build:
       target: development
     volumes:
-      - ./backend/Chesster.Api:/src
+      - ./backend/Chesster.Api:/src/Chesster.Api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

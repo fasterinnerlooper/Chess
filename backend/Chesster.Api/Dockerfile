@@ -39,11 +39,19 @@ ENTRYPOINT ["dotnet", "Chesster.Api.dll"]
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
 WORKDIR /src
 
-COPY --from=builder /app/publish .
+COPY Chesster.sln ./
+COPY Chesster.Api/Chesster.Api.csproj ./Chesster.Api/
+COPY Chesster.Api.Tests/Chesster.Api.Tests.csproj ./Chesster.Api.Tests/
+
+RUN dotnet restore Chesster.sln
+
+COPY Chesster.Api/ ./Chesster.Api/
+COPY Chesster.Api.Tests/ ./Chesster.Api.Tests/
 
 EXPOSE 8080
 
 ENV ASPNETCORE_ENVIRONMENT=Development \
-    ASPNETCORE_URLS=http://+:8080
+    ASPNETCORE_URLS=http://+:$ASPNETCORE_PORT
 
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--project", "Chesster.Api.dll"]
+WORKDIR /src/Chesster.Api
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
