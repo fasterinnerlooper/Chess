@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Http.Json;
 using Chesster.Api.Models.DTOs;
 
 namespace Chesster.Api.Services;
@@ -14,12 +15,17 @@ public class ChernevAnalysisEngine : IAnalysisEngine
     private readonly ILogger<ChernevAnalysisEngine> _logger;
     private readonly IChessService _chessService;
     private readonly string _stockfishPath;
+    private readonly HttpClient _httpClient;
+    private readonly bool _useHttp;
 
     public ChernevAnalysisEngine(ILogger<ChernevAnalysisEngine> logger, IChessService chessService, IConfiguration configuration)
     {
         _logger = logger;
         _chessService = chessService;
         _stockfishPath = configuration["Stockfish:Path"] ?? "stockfish";
+        
+        _useHttp = _stockfishPath.StartsWith("http");
+        _httpClient = _useHttp ? new HttpClient { BaseAddress = new Uri(_stockfishPath.TrimEnd('/')) } : null;
     }
 
     public async Task<ChernevExplanation> AnalyzePositionAsync(string fen, string move, string side)
@@ -69,6 +75,36 @@ public class ChernevAnalysisEngine : IAnalysisEngine
 
     private async Task<string> RunStockfishAsync(string fen)
     {
+        if (_useHttp)
+        {
+            try
+            {
+                var encodedFen = Uri.EscapeDataString(fen);
+                var response = await _httpClient.GetAsync($"/bestmove?fen={encodedFen}&depth=15");
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<StockfishBestMoveResponse>();
+                    if (result?.BestMove != null)
+                    {
+                        var evalResponse = await _httpClient.PostAsJsonAsync("/eval", new { fen });
+                        if (evalResponse.IsSuccessStatusCode)
+                        {
+                            var evalResult = await evalResponse.Content.ReadFromJsonAsync<StockfishEvalResponse>();
+                            return evalResult?.Evaluation ?? string.Empty;
+                        }
+                    }
+                    return string.Empty;
+                }
+                _logger.LogWarning("Stockfish HTTP returned {StatusCode}, using heuristic evaluation", response.StatusCode);
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Stockfish HTTP not available, using heuristic evaluation");
+                return string.Empty;
+            }
+        }
+
         try
         {
             var psi = new ProcessStartInfo
@@ -96,6 +132,13 @@ public class ChernevAnalysisEngine : IAnalysisEngine
             _logger.LogWarning(ex, "Stockfish not available, using heuristic evaluation");
             return string.Empty;
         }
+    }
+
+    private class StockfishEvaluation
+    {
+        public string? Fen { get; set; }
+        public string? Evaluation { get; set; }
+        public string? BestMove { get; set; }
     }
 
     private int? ParseEvaluation(string output)

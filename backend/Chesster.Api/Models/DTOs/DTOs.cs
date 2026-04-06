@@ -87,3 +87,11 @@ public record OAuthCallbackRequest(
     [Required] string Code,
     string? State
 );
+
+public record StockfishBestMoveResponse(
+    string? BestMove
+);
+
+public record StockfishEvalResponse(
+    string? Evaluation
+);
