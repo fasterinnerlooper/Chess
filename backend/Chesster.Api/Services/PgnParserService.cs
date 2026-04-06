@@ -69,7 +69,7 @@ public class PgnParserService : IPgnParserService
         var movesSection = Regex.Replace(pgn, @"\[.*?\]", "").Trim();
         movesSection = Regex.Replace(movesSection, @"\([^)]*\)", "");
         
-        var movePattern = @"(\d+\.)([^\d]+)";
+        var movePattern = @"(\d+\.)(.*)";
         var moveMatches = Regex.Matches(movesSection, movePattern);
         var moveNumber = 1;
         var isWhiteTurn = true;
