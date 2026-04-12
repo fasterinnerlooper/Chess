@@ -147,7 +147,7 @@ public class AnalysisControllerTests : TestBase
         };
 
         _mockPgnParser
-            .Setup(x => x.Parse(game.Pgn))
+            .Setup(x => x.Parse(It.IsAny<string>()))
             .Returns(new Chesster.Api.Services.ParsedGame { Moves = parsedMoves });
 
         // Mock analysis engine

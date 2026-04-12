@@ -28,6 +28,7 @@ services:
       - Jwt__Audience=Chesster
     ports:
       - "${API_PORT:-5000}:8080"
+      - "4020:4020"
     depends_on:
       chesster-db:
         condition: service_healthy
@@ -68,13 +69,3 @@ networks:
 
 volumes:
   chesster-data:
-
-# Development override - add volumes for hot reload
-x-dev-volumes: &dev-volumes
-  volumes:
-    - ./frontend:/app
-    - /app/node_modules
-
-x-dev-volumes-api: &dev-volumes-api
-  volumes:
-    - ./backend/Chesster.Api:/src/Chesster.Api

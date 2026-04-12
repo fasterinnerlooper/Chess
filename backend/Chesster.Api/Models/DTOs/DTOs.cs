@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Chesster.Api.Models.DTOs;
 
@@ -92,6 +93,39 @@ public record StockfishBestMoveResponse(
     string? BestMove
 );
 
+public record StockfishApiResponse(
+    StockfishBestMoveResponse? Result
+);
+
 public record StockfishEvalResponse(
     string? Evaluation
+);
+
+public record StockfishScoreDto(
+    [property: JsonPropertyName("unit")] string Unit,
+    [property: JsonPropertyName("value")] int Value
+);
+
+public record StockfishInfoDto(
+    [property: JsonPropertyName("string")] string InfoString,
+    [property: JsonPropertyName("depth")] int Depth,
+    [property: JsonPropertyName("seldepth")] int Seldepth,
+    [property: JsonPropertyName("time")] int Time,
+    [property: JsonPropertyName("nodes")] int Nodes,
+    [property: JsonPropertyName("nps")] int Nps,
+    [property: JsonPropertyName("tbhits")] int Tbhits,
+    [property: JsonPropertyName("score")] StockfishScoreDto Score,
+    [property: JsonPropertyName("multipv")] int Multipv,
+    [property: JsonPropertyName("pv")] string Pv
+);
+
+public record StockfishResultDto(
+    [property: JsonPropertyName("bestmove")] string Bestmove,
+    [property: JsonPropertyName("info")] List<StockfishInfoDto> Info,
+    [property: JsonPropertyName("ponder")] string Ponder,
+    [property: JsonPropertyName("fen")] string Fen
+);
+
+public record StockfishBestMoveApiResponse(
+    [property: JsonPropertyName("result")] StockfishResultDto Result
 );

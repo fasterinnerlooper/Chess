@@ -80,11 +80,10 @@ export const useGameStore = defineStore('game', () => {
     let side: 'w' | 'b' = 'w';
     
     history.forEach((move) => {
-      chess.move(move);
       gameHistory.value.push({
         san: move.san,
         uci: move.from + move.to + (move.promotion || ''),
-        fen: chess.fen(),
+        fen: move.after,
         moveNumber: moveNumber,
         side: side
       });

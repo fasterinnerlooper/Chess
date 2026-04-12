@@ -28,10 +28,11 @@ public class TestBase
     {
         var services = new ServiceCollection();
 
-        // Add in-memory database
+        // Add in-memory database with unique name
+        var dbName = $"TestDb_{Guid.NewGuid():N}";
         services.AddDbContext<ChessterDbContext>(options =>
         {
-            options.UseInMemoryDatabase("TestDb");
+            options.UseInMemoryDatabase(dbName);
         });
 
         // Mock services

@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 

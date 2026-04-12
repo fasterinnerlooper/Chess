@@ -22,7 +22,7 @@ public class ChernevAnalysisEngine : IAnalysisEngine
     {
         _logger = logger;
         _chessService = chessService;
-        _stockfishPath = configuration["Stockfish:Path"] ?? "stockfish";
+        _stockfishPath = configuration["Stockfish:Path"] ?? "http://chesster-stockfish:3000";
         
         _useHttp = _stockfishPath.StartsWith("http");
         _httpClient = _useHttp ? new HttpClient { BaseAddress = new Uri(_stockfishPath.TrimEnd('/')) } : null;
@@ -73,7 +73,7 @@ public class ChernevAnalysisEngine : IAnalysisEngine
         return await EvaluatePositionAsync(fen);
     }
 
-    private async Task<string> RunStockfishAsync(string fen)
+    private async Task<StockfishAnalysisResult> RunStockfishAsync(string fen)
     {
         if (_useHttp)
         {
@@ -83,25 +83,24 @@ public class ChernevAnalysisEngine : IAnalysisEngine
                 var response = await _httpClient.GetAsync($"/bestmove?fen={encodedFen}&depth=15");
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<StockfishBestMoveResponse>();
-                    if (result?.BestMove != null)
+                    var result = await response.Content.ReadFromJsonAsync<StockfishBestMoveApiResponse>();
+                    if (result?.Result != null)
                     {
-                        var evalResponse = await _httpClient.PostAsJsonAsync("/eval", new { fen });
-                        if (evalResponse.IsSuccessStatusCode)
-                        {
-                            var evalResult = await evalResponse.Content.ReadFromJsonAsync<StockfishEvalResponse>();
-                            return evalResult?.Evaluation ?? string.Empty;
-                        }
+                        var bestMove = result.Result.Bestmove;
+                        var evaluation = ExtractEvaluation(result.Result);
+                        var principalVariation = ExtractPv(result.Result);
+                        var searchStats = ExtractSearchStats(result.Result);
+
+                        return new StockfishAnalysisResult(bestMove, evaluation, principalVariation, searchStats);
                     }
-                    return string.Empty;
                 }
                 _logger.LogWarning("Stockfish HTTP returned {StatusCode}, using heuristic evaluation", response.StatusCode);
-                return string.Empty;
+                return null;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Stockfish HTTP not available, using heuristic evaluation");
-                return string.Empty;
+                return null;
             }
         }
 
@@ -117,7 +116,7 @@ public class ChernevAnalysisEngine : IAnalysisEngine
             };
 
             using var process = Process.Start(psi);
-            if (process == null) return string.Empty;
+            if (process == null) return null;
 
             await process.StandardInput.WriteLineAsync($"position fen {fen}");
             await process.StandardInput.WriteLineAsync("eval");
@@ -125,31 +124,81 @@ public class ChernevAnalysisEngine : IAnalysisEngine
 
             var output = await process.StandardOutput.ReadToEndAsync();
             await process.WaitForExitAsync();
-            return output;
+            return null;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Stockfish not available, using heuristic evaluation");
-            return string.Empty;
+            return null;
         }
     }
 
-    private class StockfishEvaluation
+    private int? ExtractEvaluation(StockfishResultDto result)
     {
-        public string? Fen { get; set; }
-        public string? Evaluation { get; set; }
-        public string? BestMove { get; set; }
+        var deepestInfo = result.Info.OrderByDescending(i => i.Depth).FirstOrDefault();
+        return deepestInfo?.Score?.Value;
     }
 
-    private int? ParseEvaluation(string output)
+    private string ExtractPv(StockfishResultDto result)
     {
-        if (string.IsNullOrEmpty(output)) return null;
-        
-        var match = System.Text.RegularExpressions.Regex.Match(output, @"Centipawn:\s*(-?\d+)");
-        if (match.Success && int.TryParse(match.Groups[1].Value, out var eval))
-            return eval;
+        var deepestInfo = result.Info.OrderByDescending(i => i.Depth).FirstOrDefault();
+        return deepestInfo?.Pv ?? string.Empty;
+    }
 
-        return null;
+    private StockfishSearchStats ExtractSearchStats(StockfishResultDto result)
+    {
+        var deepestInfo = result.Info.OrderByDescending(i => i.Depth).FirstOrDefault();
+        if (deepestInfo == null) return null;
+
+        return new StockfishSearchStats(
+            deepestInfo.Depth,
+            deepestInfo.Seldepth,
+            deepestInfo.Time,
+            deepestInfo.Nodes,
+            deepestInfo.Nps,
+            deepestInfo.Tbhits
+        );
+    }
+
+    private class StockfishAnalysisResult
+    {
+        public string BestMove { get; }
+        public int? Evaluation { get; }
+        public string PrincipalVariation { get; }
+        public StockfishSearchStats SearchStats { get; }
+
+        public StockfishAnalysisResult(string bestMove, int? evaluation, string principalVariation, StockfishSearchStats searchStats)
+        {
+            BestMove = bestMove;
+            Evaluation = evaluation;
+            PrincipalVariation = principalVariation;
+            SearchStats = searchStats;
+        }
+    }
+
+    private class StockfishSearchStats
+    {
+        public int Depth { get; }
+        public int Seldepth { get; }
+        public int Time { get; }
+        public int Nodes { get; }
+        public int Nps { get; }
+        public int Tbhits { get; }
+
+        public StockfishSearchStats(int depth, int seldepth, int time, int nodes, int nps, int tbhits)
+        {
+            Depth = depth;
+            Seldepth = seldepth;
+            Time = time;
+            Nodes = nodes;
+            Nps = nps;
+            Tbhits = tbhits;
+        }
+    }
+
+    private int? ParseEvaluation(StockfishAnalysisResult result)
+    {
+        return result?.Evaluation;
     }
 
     private int GenerateHeuristicEvaluation(string fen)

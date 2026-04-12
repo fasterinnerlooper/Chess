@@ -16,7 +16,7 @@ COPY Chesster.Api.Tests/ ./Chesster.Api.Tests/
 
 # Build and publish
 WORKDIR /src/Chesster.Api
-RUN dotnet publish -c Release -o /app/publish --no-self-contained
+RUN dotnet publish -c Debug -o /app/publish --no-self-contained
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
@@ -24,6 +24,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/publish .
@@ -48,10 +49,14 @@ RUN dotnet restore Chesster.sln
 COPY Chesster.Api/ ./Chesster.Api/
 COPY Chesster.Api.Tests/ ./Chesster.Api.Tests/
 
-EXPOSE 8080
+RUN dotnet tool install -g vsdbg
+
+EXPOSE 8080 4020
 
 ENV ASPNETCORE_ENVIRONMENT=Development \
-    ASPNETCORE_URLS=http://+:$ASPNETCORE_PORT
+    ASPNETCORE_URLS=http://+:8080 \
+    DOTNET_STARTUP_HOOKS=/root/.vsdbg/vsdbg/hook \
+    DEBUGGER_PORT=4020
 
 WORKDIR /src/Chesster.Api
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
+ENTRYPOINT ["vsdbg", "dotnet", "run", "--no-launch-profile"]
